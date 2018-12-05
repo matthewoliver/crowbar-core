@@ -152,6 +152,7 @@ node_search_with_cache("*:*").each do |mnode|
   admin_data_net = Chef::Recipe::Barclamp::Inventory.get_network_by_type(mnode, "admin")
   admin_mac_addresses = find_node_boot_mac_addresses(mnode, admin_data_net)
   admin_ip_address = admin_data_net.nil? ? mnode[:ipaddress] : admin_data_net.address
+  admin_prefix = admin_data_net.nil? ? "" : "#{admin_data_net.subnet}/#{admin_data_net.netmask}"
 
   ####
   # First deal with states that don't require PXE booting
@@ -181,6 +182,8 @@ node_search_with_cache("*:*").each do |mnode|
         hostname mnode.name
         if admin_mac_addresses.include?(mac_list[i])
           ipaddress admin_ip_address
+          prefix admin_prefix
+          ip_version admin_data_net.ip_version
         end
         macaddress mac_list[i]
         action :add
@@ -247,6 +250,8 @@ filename = \"discovery/x86_64/bios/pxelinux.0\";
 }",
           "next-server #{admin_ip}"
         ]
+        prefix admin_prefix
+        ip_version admin_data_net.ip_version
       end
       action :add
     end
