@@ -10,7 +10,8 @@ domain_name = node[:dns].nil? ? node[:domain] : (node[:dns][:domain] || node[:do
 
 admin_net = Barclamp::Inventory.get_network_definition(node, "admin")
 lease_time = node[:provisioner][:dhcp]["lease-time"]
-admin6_uri = "tftp://[#{admin_ip}]/discovery"
+web_port = node[:provisioner][:web_port]
+admin6_uri = "http://[#{admin_ip}]:#{web_port}/discovery"
 
 ipv4_dhcp_opts = [
   "allow unknown-clients",
@@ -41,22 +42,21 @@ ipv6_dhcp_opts = [
   "allow unknown-clients",
   "default-lease-time #{lease_time}",
   "max-lease-time #{lease_time}",
-  'if exists dhcp-parameter-request-list {
-       # Always send the PXELINUX options (specified in hexadecimal)
-       option dhcp-parameter-request-list = concat(option dhcp-parameter-request-list,d0,d1,d2,d3);
-     }',
+  "option dhcp6.vendor-class 0 10 \"HTTPClient\"",
   "if option dhcp6.client-arch-type = 00:06 {
        option dhcp6.bootfile-url \"#{admin6_uri}/ia32/efi/bootia32.efi\";
      } else if option dhcp6.client-arch-type = 00:07 {
-       option dhcp6.bootfile-url \"/#{admin6_uri}x86_64/efi/default/boot/bootx64.efi\";
+       option dhcp6.bootfile-url \"#{admin6_uri}x86_64/efi/default/boot/bootx64.efi\";
      } else if option dhcp6.client-arch-type = 00:09 {
+       option dhcp6.bootfile-url \"#{admin6_uri}/x86_64/efi/default/boot/bootx64.efi\";
+     } else if option dhcp6.client-arch-type = 00:10 {
        option dhcp6.bootfile-url \"#{admin6_uri}/x86_64/efi/default/boot/bootx64.efi\";
      } else if option dhcp6.client-arch-type = 00:0b {
        option dhcp6.bootfile-url \"#{admin6_uri}/aarch64/efi/default/boot/bootaa64.efi\";
      } else if option dhcp6.client-arch-type = 00:0e {
-       option dhcp6.bootfile-url \"#{admin6_uri}/discovery/ppc64le/bios/\";
+       option dhcp6.bootfile-url \"#{admin6_uri}/ppc64le/bios/\";
      } else {
-       option dhcp6.bootfile-url \"#{admin6_uri}/x86_64/bios/pxelinux.0\";
+       option dhcp6.bootfile-url \"#{admin6_uri}/x86_64/efi/default/boot/bootx64.efi\";
      }"
 ]
 

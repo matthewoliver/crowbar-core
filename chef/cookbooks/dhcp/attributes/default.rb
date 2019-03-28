@@ -20,6 +20,7 @@ default[:dhcp][:options][:v6] = [
     "option dhcp-client-debug code 226 = unsigned integer 16",
     "option dhcp-client-debug 0",
     "option dhcp6.bootfile-url code 59 = string",
-    "option dhcp6.client-arch-type code 61 = array of unsigned integer 16"
+    "option dhcp6.client-arch-type code 61 = array of unsigned integer 16",
+    "option dhcp6.vendor-class code 16 = {integer 32, integer 16, string}"
 ]
 
